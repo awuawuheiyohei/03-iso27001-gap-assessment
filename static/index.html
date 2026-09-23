@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ISO 27001:2022 Gap Assessment · CyberVeritas</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --bg2: #161b22;
+  --bg3: #21262d;
+  --bg-elevated: #1c2128;
+  --border: #30363d;
+  --border-muted: #21262d;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --text3: #6e7681;
+  --accent: #a371f7;
+  --green: #3fb950;
+  --blue: #58a6ff;
+  --orange: #d29922;
+  --red: #f85149;
+  --red-bg: rgba(248,81,73,0.15);
+  --yellow: #d29922;
+  --yellow-bg: rgba(210,153,34,0.15);
+  --green-bg: rgba(63,185,80,0.15);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+header {
+  background: linear-gradient(135deg, #1c2128 0%, #0d1117 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 24px 32px;
+}
+header h1 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  background: linear-gradient(90deg, #a371f7 0%, #58a6ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+header .subtitle {
+  color: var(--text2);
+  font-size: 13px;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  padding: 24px 32px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+}
+.kpi {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+}
+.kpi .label {
+  font-size: 11px;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.kpi .value {
+  font-size: 28px;
+  font-weight: bold;
+}
+.kpi.compliant .value { color: var(--green); }
+.kpi.gap .value { color: var(--orange); }
+.kpi.non .value { color: var(--red); }
+.kpi .sub {
+  font-size: 12px;
+  color: var(--text2);
+  margin-top: 4px;
+}
+
+.tabs {
+  display: flex;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+}
+.tab {
+  padding: 12px 20px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: var(--text2);
+  font-size: 14px;
+  font-family: inherit;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+.tab:hover { color: var(--text); }
+.tab.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+main {
+  padding: 24px 32px;
+  max-width: 1500px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.toolbar select, .toolbar input {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+}
+.toolbar select:focus, .toolbar input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.toolbar input { flex: 1; min-width: 240px; }
+.toolbar .btn {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.toolbar .btn:hover { border-color: var(--accent); }
+.toolbar .btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+.toolbar .btn.primary:hover { opacity: 0.85; }
+
+.panel {
+  display: none;
+}
+.panel.active { display: block; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 13px;
+}
+th, td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+th {
+  background: var(--bg3);
+  color: var(--text2);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+tr:hover td { background: var(--bg-elevated); }
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge.compliant   { background: var(--green-bg); color: var(--green); }
+.badge.partial     { background: var(--yellow-bg); color: var(--yellow); }
+.badge.non         { background: var(--red-bg); color: var(--red); }
+.badge.noteval     { background: var(--bg3); color: var(--text3); }
+.badge.new2022     { background: rgba(88,166,255,0.15); color: var(--blue); margin-left: 4px; }
+.badge.sla-red     { background: var(--red-bg); color: var(--red); }
+.badge.sla-yellow  { background: var(--yellow-bg); color: var(--yellow); }
+.badge.sla-green   { background: var(--green-bg); color: var(--green); }
+.badge.sla-gray    { background: var(--bg3); color: var(--text3); }
+.badge.risk-critical { background: var(--red-bg); color: var(--red); }
+.badge.risk-high     { background: var(--yellow-bg); color: var(--yellow); }
+.badge.risk-medium   { background: var(--bg3); color: var(--text2); }
+.badge.risk-low      { background: var(--bg3); color: var(--text3); }
+
+code {
+  font-family: "SF Mono", monospace;
+  background: var(--bg3);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  color: var(--orange);
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+.modal.open { display: flex; }
+.modal-content {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 32px;
+  max-width: 700px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+.modal h3 {
+  margin: 0 0 16px;
+  color: var(--accent);
+}
+.modal .close {
+  float: right;
+  cursor: pointer;
+  color: var(--text2);
+  font-size: 20px;
+  background: none;
+  border: none;
+}
+.modal .close:hover { color: var(--text); }
+
+.json-block {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  font-family: "SF Mono", monospace;
+  font-size: 12px;
+  color: var(--text2);
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.section-title {
+  margin: 24px 0 12px;
+  font-size: 16px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.export-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+}
+.export-box .row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+.export-box code { flex: 1; background: var(--bg); padding: 8px 12px; }
+
+footer {
+  text-align: center;
+  padding: 24px;
+  color: var(--text3);
+  font-size: 12px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🛡️ ISO 27001:2022 Gap Assessment Evidence Engine</h1>
+  <div class="subtitle">Project CyberVeritas · 93 控制项 + 防篡改证据库 + CAP 整改追踪 · v1.0</div>
+</header>
+
+<div class="kpis" id="kpis">
+  <div class="kpi"><div class="label">Total Controls</div><div class="value" id="kpi-total">-</div><div class="sub">A.5 + A.6 + A.7 + A.8</div></div>
+  <div class="kpi compliant"><div class="label">Compliant</div><div class="value" id="kpi-compliant">-</div><div class="sub" id="kpi-compliant-pct">-</div></div>
+  <div class="kpi gap"><div class="label">Partial</div><div class="value" id="kpi-partial">-</div><div class="sub">需补充</div></div>
+  <div class="kpi non"><div class="label">Non-Compliant</div><div class="value" id="kpi-non">-</div><div class="sub">整改中</div></div>
+  <div class="kpi"><div class="label">CAPs</div><div class="value" id="kpi-caps">-</div><div class="sub" id="kpi-caps-sub">-</div></div>
+  <div class="kpi"><div class="label">Evidence</div><div class="value" id="kpi-evidence">-</div><div class="sub">含 SHA-256</div></div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="soa">📋 SoA Matrix</button>
+  <button class="tab" data-tab="evidence">🔍 Evidence Vault</button>
+  <button class="tab" data-tab="caps">🚨 CAP SLA</button>
+  <button class="tab" data-tab="collectors">⚙️ Collectors</button>
+  <button class="tab" data-tab="audit">📤 Auditor Pack</button>
+</div>
+
+<main>
+
+<!-- ============================ SoA Panel ============================ -->
+<div class="panel active" id="panel-soa">
+  <div class="toolbar">
+    <select id="soa-theme">
+      <option value="">全部主题</option>
+      <option value="A.5 Organizational">A.5 Organizational (37)</option>
+      <option value="A.6 People">A.6 People (8)</option>
+      <option value="A.7 Physical">A.7 Physical (14)</option>
+      <option value="A.8 Technological">A.8 Technological (34)</option>
+    </select>
+    <select id="soa-status">
+      <option value="">全部状态</option>
+      <option value="COMPLIANT">Compliant</option>
+      <option value="PARTIALLY_COMPLIANT">Partially</option>
+      <option value="NON_COMPLIANT">Non-Compliant</option>
+      <option value="NOT_EVALUATED">Not Evaluated</option>
+    </select>
+    <input type="text" id="soa-search" placeholder="搜索 ID / 标题 / 描述...">
+    <label style="display:flex; align-items:center; gap:6px; color:var(--text2); font-size:13px;">
+      <input type="checkbox" id="soa-new2022"> 仅 2022 新增
+    </label>
+    <span style="color:var(--text2); font-size:12px;" id="soa-count"></span>
+  </div>
+  <table>
+    <thead>
+      <tr><th>ID</th><th>主题</th><th>标题</th><th>状态</th><th>风险</th><th>责任人</th><th>操作</th></tr>
+    </thead>
+    <tbody id="soa-tbody"></tbody>
+  </table>
+</div>
+
+<!-- ============================ Evidence Panel ============================ -->
+<div class="panel" id="panel-evidence">
+  <div class="toolbar">
+    <select id="ev-control">
+      <option value="">全部控制项</option>
+    </select>
+    <select id="ev-source">
+      <option value="">全部来源</option>
+    </select>
+    <span style="color:var(--text2); font-size:12px;" id="ev-count"></span>
+  </div>
+  <table>
+    <thead>
+      <tr><th>Evidence ID</th><th>控制项</th><th>来源</th><th>SHA-256 前缀</th><th>采集时间</th><th>完整性</th><th>操作</th></tr>
+    </thead>
+    <tbody id="ev-tbody"></tbody>
+  </table>
+</div>
+
+<!-- ============================ CAP Panel ============================ -->
+<div class="panel" id="panel-caps">
+  <div class="toolbar">
+    <button class="btn primary" onclick="showCreateCapModal()">+ 新建 CAP</button>
+    <span style="color:var(--text2); font-size:12px;" id="caps-count"></span>
+  </div>
+  <table>
+    <thead>
+      <tr><th>控制项</th><th>差距描述</th><th>整改措施</th><th>责任人</th><th>截止日期</th><th>SLA</th><th>状态</th><th>操作</th></tr>
+    </thead>
+    <tbody id="caps-tbody"></tbody>
+  </table>
+</div>
+
+<!-- ============================ Collectors Panel ============================ -->
+<div class="panel" id="panel-collectors">
+  <div class="toolbar">
+    <button class="btn primary" onclick="runAllCollectors()">🚀 一键运行全部 6 个 Collectors</button>
+  </div>
+  <h3 class="section-title">📡 模拟 Connector（采集 → 计算 SHA-256 → 写入 evidence_items）</h3>
+  <div id="collectors-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(360px,1fr)); gap:16px;"></div>
+</div>
+
+<!-- ============================ Audit / Export Panel ============================ -->
+<div class="panel" id="panel-audit">
+  <div class="export-box">
+    <h3 class="section-title">📤 审计师导出（One-Click Auditor Pack）</h3>
+    <div class="row">
+      <code>curl http://localhost:5030/api/audit/soa-export?format=json</code>
+      <button class="btn" onclick="copyCmd('curl http://localhost:5030/api/audit/soa-export?format=json')">复制</button>
+      <button class="btn primary" onclick="window.open('/api/audit/soa-export?format=csv','_blank')">下载 CSV</button>
+    </div>
+    <div class="row">
+      <code>curl http://localhost:5030/api/audit/evidence-summary</code>
+      <button class="btn" onclick="copyCmd('curl http://localhost:5030/api/audit/evidence-summary')">复制</button>
+    </div>
+    <div class="row">
+      <code>curl "http://localhost:5030/api/audit/trail?limit=50"</code>
+      <button class="btn" onclick="copyCmd('curl http://localhost:5030/api/audit/trail?limit=50')">复制</button>
+    </div>
+    <p style="color:var(--text2); font-size:12px; margin-top:16px;">
+      所有导出动作会写入 <code>audit_trail</code> 表（含 actor + action + timestamp + details），
+      满足 ISO 27001 A.5.28（Collection of evidence）要求。
+    </p>
+  </div>
+
+  <h3 class="section-title">📜 最近 50 条审计 trail</h3>
+  <table>
+    <thead>
+      <tr><th>#</th><th>时间</th><th>Actor</th><th>Action</th><th>实体</th><th>详情</th></tr>
+    </thead>
+    <tbody id="audit-tbody"></tbody>
+  </table>
+</div>
+
+</main>
+
+<footer>
+  Project CyberVeritas · ISO/IEC 27001:2022 Gap Assessment Evidence Engine · MIT License · 仅供面试展示
+</footer>
+
+<!-- ============================ Modals ============================ -->
+<div class="modal" id="modal-control">
+  <div class="modal-content">
+    <button class="close" onclick="closeModal('modal-control')">×</button>
+    <h3 id="modal-control-title">-</h3>
+    <div id="modal-control-body"></div>
+  </div>
+</div>
+
+<div class="modal" id="modal-evidence">
+  <div class="modal-content">
+    <button class="close" onclick="closeModal('modal-evidence')">×</button>
+    <h3>Evidence 详情</h3>
+    <div id="modal-evidence-body"></div>
+  </div>
+</div>
+
+<div class="modal" id="modal-cap">
+  <div class="modal-content">
+    <button class="close" onclick="closeModal('modal-cap')">×</button>
+    <h3>新建 CAP</h3>
+    <div id="modal-cap-body">
+      <label style="display:block; margin-bottom:8px; color:var(--text2); font-size:12px;">控制项</label>
+      <select id="cap-control-id" style="width:100%; background:var(--bg3); border:1px solid var(--border); color:var(--text); padding:8px; border-radius:6px; margin-bottom:12px;"></select>
+      <label style="display:block; margin-bottom:8px; color:var(--text2); font-size:12px;">差距描述</label>
+      <textarea id="cap-gap" rows="3" style="width:100%; background:var(--bg3); border:1px solid var(--border); color:var(--text); padding:8px; border-radius:6px; margin-bottom:12px; font-family:inherit;"></textarea>
+      <label style="display:block; margin-bottom:8px; color:var(--text2); font-size:12px;">整改措施</label>
+      <textarea id="cap-action" rows="3" style="width:100%; background:var(--bg3); border:1px solid var(--border); color:var(--text); padding:8px; border-radius:6px; margin-bottom:12px; font-family:inherit;"></textarea>
+      <label style="display:block; margin-bottom:8px; color:var(--text2); font-size:12px;">责任人</label>
+      <input type="text" id="cap-owner" placeholder="如 Alex Zhang (Data Security)" style="width:100%; background:var(--bg3); border:1px solid var(--border); color:var(--text); padding:8px; border-radius:6px; margin-bottom:12px;">
+      <label style="display:block; margin-bottom:8px; color:var(--text2); font-size:12px;">截止日期</label>
+      <input type="date" id="cap-due" style="width:100%; background:var(--bg3); border:1px solid var(--border); color:var(--text); padding:8px; border-radius:6px; margin-bottom:16px;">
+      <button class="btn primary" onclick="submitCreateCap()">提交</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '/api';
+let allControls = [];
+let allEvidence = [];
+let allCaps = [];
+let allAuditTrail = [];
+
+// ============================ Tabs ============================
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ============================ Init ============================
+async function init() {
+  await Promise.all([loadStats(), loadControls(), loadEvidence(), loadAuditTrail()]);
+  setupFilters();
+}
+
+async function loadStats() {
+  const s = await fetch(API + '/stats').then(r => r.json());
+  document.getElementById('kpi-total').textContent = s.controls.total;
+  document.getElementById('kpi-compliant').textContent = s.controls.compliant;
+  document.getElementById('kpi-compliant-pct').textContent = `${s.controls.compliance_pct}% 合规率`;
+  document.getElementById('kpi-partial').textContent = s.controls.partially_compliant;
+  document.getElementById('kpi-non').textContent = s.controls.non_compliant;
+  document.getElementById('kpi-caps').textContent = s.caps.total;
+  document.getElementById('kpi-caps-sub').textContent = `${s.caps.open_or_in_progress} 进行中 · ${s.caps.overdue} 逾期`;
+  document.getElementById('kpi-evidence').textContent = s.evidence_count;
+}
+
+async function loadControls() {
+  allControls = await fetch(API + '/controls').then(r => r.json());
+  renderControls();
+  // populate dropdown
+  const sel = document.getElementById('cap-control-id');
+  sel.innerHTML = '<option value="">-- 选择 --</option>' + allControls
+    .map(c => `<option value="${c.control_id}">${c.control_id} ${c.title}</option>`).join('');
+}
+
+async function loadEvidence() {
+  allEvidence = await fetch(API + '/evidence?limit=200').then(r => r.json());
+  renderEvidence();
+  // populate source dropdown
+  const sources = [...new Set(allEvidence.map(e => e.source_name))];
+  document.getElementById('ev-source').innerHTML = '<option value="">全部来源</option>' +
+    sources.map(s => `<option value="${s}">${s}</option>`).join('');
+  // populate control dropdown
+  const ctrls = [...new Set(allEvidence.map(e => e.control_id))];
+  document.getElementById('ev-control').innerHTML = '<option value="">全部控制项</option>' +
+    ctrls.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+async function loadCaps() {
+  allCaps = await fetch(API + '/caps').then(r => r.json());
+  renderCaps();
+}
+
+async function loadAuditTrail() {
+  allAuditTrail = await fetch(API + '/audit/trail?limit=50').then(r => r.json());
+  renderAuditTrail();
+}
+
+async function loadCollectors() {
+  const data = [
+    { name: 'git_branch_protection', label: 'GitHub Branch Protection', controls: ['A.8.28', 'A.8.32'], desc: '分支保护 / SAST / 签名提交' },
+    { name: 'iam_baseline',           label: 'IAM Password & MFA',       controls: ['A.5.15', 'A.8.5'],  desc: '密码策略 + MFA 强制' },
+    { name: 'endpoint_posture',       label: 'Endpoint Posture',         controls: ['A.8.1'],           desc: 'FileVault + EDR + 防火墙' },
+    { name: 'cloud_storage_baseline', label: 'AWS S3/KMS/CloudTrail',    controls: ['A.5.23'],          desc: '公开访问阻止 + KMS 加密' },
+    { name: 'threat_intelligence',   label: 'Threat Intelligence',      controls: ['A.5.7'],           desc: 'MISP / Recorded Future IOC' },
+    { name: 'dlp_status',            label: 'DLP Coverage & Policy',    controls: ['A.8.12'],          desc: 'Endpoint + Cloud DLP 状态' },
+  ];
+  const grid = document.getElementById('collectors-grid');
+  grid.innerHTML = data.map(c => `
+    <div style="background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:8px;">
+        <strong style="color:var(--accent);">${c.label}</strong>
+        <span style="font-size:11px; color:var(--text2);">${c.controls.join(' + ')}</span>
+      </div>
+      <div style="color:var(--text2); font-size:12px; margin-bottom:12px;">${c.desc}</div>
+      <button class="btn" onclick="runOneCollector('${c.name}')">▶️ Run</button>
+    </div>
+  `).join('');
+}
+
+// ============================ Render ============================
+function renderControls() {
+  const theme = document.getElementById('soa-theme').value;
+  const status = document.getElementById('soa-status').value;
+  const search = document.getElementById('soa-search').value.trim().toLowerCase();
+  const onlyNew = document.getElementById('soa-new2022').checked;
+
+  const filtered = allControls.filter(c => {
+    if (theme && c.theme !== theme) return false;
+    if (status && c.status !== status) return false;
+    if (onlyNew && !c.is_new_2022) return false;
+    if (search && !(c.control_id.toLowerCase().includes(search) || c.title.toLowerCase().includes(search) || c.description.toLowerCase().includes(search))) return false;
+    return true;
+  });
+
+  document.getElementById('soa-count').textContent = `${filtered.length} / ${allControls.length} 项`;
+  const statusBadge = s => {
+    if (s === 'COMPLIANT') return '<span class="badge compliant">Compliant</span>';
+    if (s === 'PARTIALLY_COMPLIANT') return '<span class="badge partial">Partial</span>';
+    if (s === 'NON_COMPLIANT') return '<span class="badge non">Non-Compliant</span>';
+    return '<span class="badge noteval">Not Evaluated</span>';
+  };
+  const riskBadge = r => {
+    const cls = r.toLowerCase();
+    return `<span class="badge risk-${cls}">${r}</span>`;
+  };
+
+  document.getElementById('soa-tbody').innerHTML = filtered.map(c => `
+    <tr>
+      <td><code>${c.control_id}</code>${c.is_new_2022 ? '<span class="badge new2022">2022</span>' : ''}</td>
+      <td style="color:var(--text2); font-size:12px;">${c.theme}</td>
+      <td>${c.title}</td>
+      <td>${statusBadge(c.status)}</td>
+      <td>${riskBadge(c.risk_rating)}</td>
+      <td style="font-size:12px;">${c.owner}</td>
+      <td><button class="btn" onclick="showControlDetail('${c.control_id}')">详情</button></td>
+    </tr>
+  `).join('');
+}
+
+function renderEvidence() {
+  const ctrl = document.getElementById('ev-control').value;
+  const src = document.getElementById('ev-source').value;
+  const filtered = allEvidence.filter(e => {
+    if (ctrl && e.control_id !== ctrl) return false;
+    if (src && e.source_name !== src) return false;
+    return true;
+  });
+  document.getElementById('ev-count').textContent = `${filtered.length} 条`;
+  document.getElementById('ev-tbody').innerHTML = filtered.map(e => `
+    <tr>
+      <td><code>${e.evidence_id.substring(0, 8)}...</code></td>
+      <td>${e.control_id}</td>
+      <td style="font-size:12px;">${e.source_name}</td>
+      <td><code>${e.sha256_hash.substring(0, 16)}...</code></td>
+      <td style="font-size:12px; color:var(--text2);">${e.collected_at}</td>
+      <td>${e.integrity_valid ? '<span class="badge compliant">✓ Valid</span>' : '<span class="badge non">✗ Tampered</span>'}</td>
+      <td><button class="btn" onclick="showEvidenceDetail('${e.evidence_id}')">详情</button></td>
+    </tr>
+  `).join('');
+}
+
+function renderCaps() {
+  document.getElementById('caps-count').textContent = `${allCaps.length} 个 CAP`;
+  document.getElementById('caps-tbody').innerHTML = allCaps.map(c => {
+    const slaClass = 'sla-' + c.sla_color;
+    const slaLabel = c.sla_color === 'red' ? '🔴 ' : c.sla_color === 'yellow' ? '🟡 ' : c.sla_color === 'green' ? '🟢 ' : '⚪ ';
+    const daysTxt = c.days_remaining === null ? '-' : (c.days_remaining < 0 ? `${-c.days_remaining} 天逾期` : `${c.days_remaining} 天`);
+    const statusBadge = {
+      'OPEN': '<span class="badge partial">Open</span>',
+      'IN_PROGRESS': '<span class="badge partial">In Progress</span>',
+      'RESOLVED': '<span class="badge compliant">Resolved</span>',
+      'RISK_ACCEPTED': '<span class="badge noteval">Risk Accepted</span>',
+    }[c.status] || c.status;
+    return `
+      <tr>
+        <td><code>${c.control_id}</code></td>
+        <td style="font-size:12px;">${c.gap_description.substring(0, 60)}${c.gap_description.length > 60 ? '...' : ''}</td>
+        <td style="font-size:12px;">${c.remediation_action.substring(0, 60)}${c.remediation_action.length > 60 ? '...' : ''}</td>
+        <td style="font-size:12px;">${c.assigned_owner}</td>
+        <td style="font-size:12px;">${c.due_date}</td>
+        <td><span class="badge ${slaClass}">${slaLabel}${daysTxt}</span></td>
+        <td>${statusBadge}</td>
+        <td>
+          ${c.status !== 'RESOLVED' ? `<button class="btn" onclick="markCapResolved('${c.cap_id}')">标记完成</button>` : ''}
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderAuditTrail() {
+  document.getElementById('audit-tbody').innerHTML = allAuditTrail.map(a => `
+    <tr>
+      <td style="color:var(--text2);">${a.audit_id}</td>
+      <td style="font-size:12px;">${a.occurred_at}</td>
+      <td><code style="font-size:11px;">${a.actor}</code></td>
+      <td><code>${a.action}</code></td>
+      <td style="font-size:12px;">${a.entity_type || '-'}${a.entity_id ? ' / ' + a.entity_id.substring(0, 8) : ''}</td>
+      <td style="font-size:11px; color:var(--text2);">${a.details ? a.details.substring(0, 80) : '-'}</td>
+    </tr>
+  `).join('');
+}
+
+// ============================ Setup filters ============================
+function setupFilters() {
+  ['soa-theme', 'soa-status', 'soa-new'].forEach(id => {
+    document.getElementById(id).addEventListener('change', renderControls);
+  });
+  document.getElementById('soa-search').addEventListener('input', renderControls);
+  ['ev-control', 'ev-source'].forEach(id => {
+    document.getElementById(id).addEventListener('change', renderEvidence);
+  });
+}
+
+// ============================ Modals ============================
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+async function showControlDetail(cid) {
+  const c = await fetch(`${API}/controls/${cid}`).then(r => r.json());
+  const evRows = (c.evidences || []).map(e =>
+    `<tr><td><code>${e.evidence_id.substring(0,8)}</code></td><td>${e.source_name}</td><td><code>${e.sha256_hash.substring(0,12)}...</code></td><td>${e.collected_at}</td></tr>`
+  ).join('') || '<tr><td colspan=4 style="color:var(--text3);">无关联 evidence</td></tr>';
+  const capRows = (c.caps || []).map(cp =>
+    `<tr><td>${cp.gap_description.substring(0, 50)}...</td><td>${cp.assigned_owner}</td><td>${cp.due_date}</td><td>${cp.status}</td></tr>`
+  ).join('') || '<tr><td colspan=4 style="color:var(--text3);">无关联 CAP</td></tr>';
+
+  document.getElementById('modal-control-title').innerHTML = `<code>${c.control_id}</code> · ${c.title}`;
+  document.getElementById('modal-control-body').innerHTML = `
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
+      <span class="badge ${c.status === 'COMPLIANT' ? 'compliant' : c.status === 'PARTIALLY_COMPLIANT' ? 'partial' : c.status === 'NON_COMPLIANT' ? 'non' : 'noteval'}">${c.status}</span>
+      <span class="badge risk-${c.risk_rating.toLowerCase()}">${c.risk_rating}</span>
+      ${c.is_new_2022 ? '<span class="badge new2022">2022 新增</span>' : ''}
+    </div>
+    <p style="color:var(--text2); margin-bottom:16px;">${c.description}</p>
+    <p style="font-size:12px; color:var(--text2);"><strong>SoA Justification:</strong> ${c.soa_justification}</p>
+    <p style="font-size:12px; color:var(--text2);"><strong>Owner:</strong> ${c.owner} | <strong>Updated:</strong> ${c.updated_at}</p>
+
+    <h4 style="margin-top:24px; color:var(--accent);">📦 关联 Evidence (${(c.evidences||[]).length})</h4>
+    <table style="margin-top:8px;">
+      <thead><tr><th>ID</th><th>Source</th><th>SHA-256</th><th>Collected</th></tr></thead>
+      <tbody>${evRows}</tbody>
+    </table>
+
+    <h4 style="margin-top:24px; color:var(--accent);">🚨 关联 CAP (${(c.caps||[]).length})</h4>
+    <table style="margin-top:8px;">
+      <thead><tr><th>Gap</th><th>Owner</th><th>Due</th><th>Status</th></tr></thead>
+      <tbody>${capRows}</tbody>
+    </table>
+  `;
+  openModal('modal-control');
+}
+
+async function showEvidenceDetail(eid) {
+  const e = await fetch(`${API}/evidence/${eid}`).then(r => r.json());
+  let payload;
+  try { payload = JSON.stringify(JSON.parse(e.content_payload), null, 2); }
+  catch { payload = e.content_payload; }
+  document.getElementById('modal-evidence-body').innerHTML = `
+    <div style="display:flex; gap:8px; margin-bottom:12px;">
+      <span class="badge ${e.integrity_valid ? 'compliant' : 'non'}">${e.integrity_valid ? '✓ Integrity Verified' : '✗ TAMPERED'}</span>
+    </div>
+    <p><strong>Control:</strong> <code>${e.control_id}</code> | <strong>Source:</strong> ${e.source_name}</p>
+    <p><strong>Collected:</strong> ${e.collected_at}</p>
+    <p><strong>SHA-256:</strong> <code>${e.sha256_hash}</code></p>
+    <h4 style="margin-top:16px; color:var(--accent);">📄 Payload</h4>
+    <pre class="json-block">${payload}</pre>
+    <button class="btn primary" onclick="verifyEvidence('${eid}')" style="margin-top:12px;">🔍 手动触发 SHA-256 验证</button>
+  `;
+  openModal('modal-evidence');
+}
+
+function showCreateCapModal() {
+  document.getElementById('cap-gap').value = '';
+  document.getElementById('cap-action').value = '';
+  document.getElementById('cap-owner').value = '';
+  document.getElementById('cap-due').value = new Date(Date.now() + 30*24*3600*1000).toISOString().split('T')[0];
+  openModal('modal-cap');
+}
+
+async function submitCreateCap() {
+  const body = {
+    control_id: document.getElementById('cap-control-id').value,
+    gap_description: document.getElementById('cap-gap').value,
+    remediation_action: document.getElementById('cap-action').value,
+    assigned_owner: document.getElementById('cap-owner').value,
+    due_date: document.getElementById('cap-due').value,
+  };
+  if (!body.control_id || !body.gap_description || !body.remediation_action || !body.assigned_owner || !body.due_date) {
+    toast('请填全所有字段');
+    return;
+  }
+  const res = await fetch(API + '/caps', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body),
+  }).then(r => r.json());
+  if (res.detail) { toast('错误: ' + res.detail); return; }
+  closeModal('modal-cap');
+  toast('✅ CAP 已创建');
+  await loadCaps();
+  await loadStats();
+}
+
+async function markCapResolved(capId) {
+  await fetch(`${API}/caps/${capId}`, {
+    method: 'PUT', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({status: 'RESOLVED'}),
+  });
+  toast('✅ CAP 标记为 RESOLVED');
+  await loadCaps();
+  await loadStats();
+}
+
+async function verifyEvidence(eid) {
+  const r = await fetch(`${API}/evidence/${eid}/verify`, {method: 'POST'}).then(r => r.json());
+  toast(r.valid ? '✅ 完整性验证通过' : '❌ 检测到篡改！');
+}
+
+// ============================ Collectors ============================
+async function runAllCollectors() {
+  toast('🚀 运行中（6 个 connectors）...');
+  const res = await fetch(API + '/collectors/run-all', {method: 'POST'}).then(r => r.json());
+  toast(`✅ 采集完成：${res.collected} 条 evidence`);
+  await loadEvidence();
+  await loadStats();
+  await loadAuditTrail();
+}
+
+async function runOneCollector(name) {
+  toast(`▶️ 运行 ${name}...`);
+  await fetch(`${API}/collectors/${name}`, {method: 'POST'});
+  toast(`✅ ${name} 完成`);
+  await loadEvidence();
+  await loadStats();
+}
+
+// ============================ Utils ============================
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2200);
+}
+
+function copyCmd(cmd) {
+  navigator.clipboard.writeText(cmd).then(() => toast('已复制: ' + cmd));
+}
+
+// Hook for collectors tab
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.dataset.tab === 'collectors' && !document.getElementById('collectors-grid').children.length) {
+      loadCollectors();
+    }
+    if (btn.dataset.tab === 'caps') loadCaps();
+    if (btn.dataset.tab === 'audit') loadAuditTrail();
+  });
+});
+
+init();
+</script>
+
+</body>
+</html>
